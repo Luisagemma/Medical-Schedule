@@ -156,11 +156,29 @@ def genera_turni(mese, anno):
 
 
 def scarica_excel(df, mese, anno):
+    import openpyxl
+    from openpyxl.styles import Font
+    import io
+
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Turni')
+
+        wb = writer.book
+        ws = writer.sheets['Turni']
+
+        bold_font = Font(bold=True)
+
+        # Assumiamo che la colonna 'Giorno' sia la seconda (col B)
+        # Righe iniziano da 2 perché la 1 è l’header
+        for row_idx, day in enumerate(df['Giorno'], start=2):
+            if day.strip().upper() in ["SAT", "SUNDAY", "SATURDAY", "SUN", "DOMENICA", "SABATO"]:
+                for col_idx in range(1, len(df.columns) + 1):
+                    ws.cell(row=row_idx, column=col_idx).font = bold_font
+
     buffer.seek(0)
     return buffer
+
 
 st.set_page_config(page_title="Generatore Turni Medici")
 st.title("Generatore Turni Medici")
